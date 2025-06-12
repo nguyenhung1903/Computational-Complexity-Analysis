@@ -59,6 +59,6 @@ If you use this code in your research, please cite:
   title = {Computational Complexity Analysis},
   year = {2025},
   publisher = {GitHub},
-  url = {https://github.com/nguyenhung1903/Computational_Complexity_Analysis}
+  url = {https://github.com/nguyenhung1903/Computational-Complexity-Analysis}
 }
 ```
