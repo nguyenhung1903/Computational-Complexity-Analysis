@@ -57,7 +57,7 @@ If you use this code in your research, please cite:
 @misc{computational_complexity_analysis,
   author = {An Hung Nguyen},
   title = {Computational Complexity Analysis},
-  year = {2023},
+  year = {2025},
   publisher = {GitHub},
   url = {https://github.com/nguyenhung1903/Computational_Complexity_Analysis}
 }
