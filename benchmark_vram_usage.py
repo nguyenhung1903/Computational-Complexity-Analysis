@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.cuda
+import argparse
+import time
 
 def get_vram_usage_mb(device=None):
     if device is None:
@@ -13,21 +15,38 @@ def get_vram_usage_mb(device=None):
         "reserved_MB": round(reserved, 2)
     }
 
-def benchmark_models(models, input_tensor, device="cuda:0"):
+def benchmark_models(models, input_tensor, device="cuda:0", selected_model=None):
     for m in models:
-        model = m["model"].to(device).eval()
         name = m["name"]
+        if selected_model and name.lower() != selected_model.lower():
+            continue
+
+        model = m["model"].to(device).eval()
 
         torch.cuda.empty_cache()
+        torch.cuda.ipc_collect()
+
         with torch.no_grad():
             _ = model(input_tensor)
 
         vram = get_vram_usage_mb(device)
         print(f"{name:10s} | Allocated: {vram['allocated_MB']} MB | Reserved: {vram['reserved_MB']} MB")
 
+        # Clean up
+        del model
+        torch.cuda.empty_cache()
+        torch.cuda.ipc_collect()
+
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Benchmark VRAM usage for different models.")
+    parser.add_argument("--model", type=str, help="Model name to run (or all if not specified).")
+    parser.add_argument("--input_size", type=int, nargs=2, default=[512, 512],
+                        help="Input image size as height width (default: 512 512)")
+    args = parser.parse_args()
+
     device = "cuda:0"
-    x = torch.randn(1, 3, 128, 128).to(device)
+    h, w = args.input_size
+    x = torch.randn(1, 3, h, w).to(device)
 
     # Load models
     from models.Restormer import Net as Restormer
@@ -44,4 +63,4 @@ if __name__ == "__main__":
         {"name": "QuaHaarIR", "model": QuaHaarIR(decoder=True)},
     ]
 
-    benchmark_models(models, x, device=device)
+    benchmark_models(models, x, device=device, selected_model=args.model)
